@@ -331,12 +331,9 @@ raop_handler_setup(raop_conn_t *conn,
         plist_dict_set_item(r_node, "timingPort", timing_port_node);
         plist_dict_set_item(r_node, "streams", s_node);
         uint32_t len = 0;
-        char* rsp = NULL;
-        plist_to_bin(r_node, &rsp, &len);
+        plist_to_bin(r_node, response_data, &len);
         logger_log(conn->raop->logger, LOGGER_DEBUG, "SETUP 2 len = %d", len);
         http_response_add_header(response, "Content-Type", "application/x-apple-binary-plist");
-        *response_data = malloc(len);
-        memcpy(*response_data, rsp, len);
         *response_datalen = len;
         logger_log(conn->raop->logger, LOGGER_INFO, "dport = %d, tport = %d", dport, tport);
         conn->setup_status = SETUP_MIRROR_PORT;
@@ -384,12 +381,9 @@ raop_handler_setup(raop_conn_t *conn,
 		plist_dict_set_item(r_node, "timingPort", timing_port_node);
 		plist_dict_set_item(r_node, "streams", s_node);
 		uint32_t len = 0;
-		char* rsp = NULL;
-		plist_to_bin(r_node, &rsp, &len);
+		plist_to_bin(r_node, response_data, &len);
 		logger_log(conn->raop->logger, LOGGER_DEBUG, "SETUP 3 len = %d", len);
 		http_response_add_header(response, "Content-Type", "application/x-apple-binary-plist");
-		*response_data = malloc(len);
-		memcpy(*response_data, rsp, len);
 		*response_datalen = len;
 		logger_log(conn->raop->logger, LOGGER_INFO, "dport = %d, tport = %d, cport = %d", dport, tport, cport);
 		conn->setup_status = SETUP_AUDIO_PORT;
