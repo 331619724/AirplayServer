@@ -432,14 +432,14 @@ raop_rtp_thread_udp(void *arg)
     struct sockaddr_storage saddr;
     socklen_t saddrlen;
     assert(raop_rtp);
-
+    void *cb_data = raop_rtp->callbacks.audio_init(raop_rtp->callbacks.cls);
     while(1) {
         fd_set rfds;
         struct timeval tv;
         int nfds, ret;
 
         /* Check if we are still running and process callbacks */
-        if (raop_rtp_process_events(raop_rtp, NULL)) {
+        if (raop_rtp_process_events(raop_rtp, cb_data)) {
             break;
         }
 
@@ -513,7 +513,7 @@ raop_rtp_thread_udp(void *arg)
                     pcm_data.data_len = 960;
                     pcm_data.data = audiobuf;
                     pcm_data.pts = pts;
-                    raop_rtp->callbacks.audio_process(raop_rtp->callbacks.cls, &pcm_data);
+                    raop_rtp->callbacks.audio_process(raop_rtp->callbacks.cls, cb_data, &pcm_data);
                 }
                 /* Handle possible resend requests */
                 if (!no_resend) {
@@ -524,6 +524,7 @@ raop_rtp_thread_udp(void *arg)
         }
     }
     logger_log(raop_rtp->logger, LOGGER_INFO, "Exiting UDP raop_rtp_thread_udp thread");
+    raop_rtp->callbacks.audio_destroy(raop_rtp->callbacks.cls, cb_data);
     return 0;
 }
 

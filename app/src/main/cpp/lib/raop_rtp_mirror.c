@@ -204,7 +204,6 @@ raop_rtp_mirror_thread_time(void *arg)
             outtime.tv_nsec = now.tv_usec * 1000;
             int ret = pthread_cond_timedwait(&raop_rtp_mirror->time_cond, &raop_rtp_mirror->time_mutex, &outtime);
             MUTEX_UNLOCK(raop_rtp_mirror->time_mutex);
-            //sleepms(3000);
         }
     }
     logger_log(raop_rtp_mirror->logger, LOGGER_INFO, "Exiting UDP raop_rtp_mirror_thread_time thread");

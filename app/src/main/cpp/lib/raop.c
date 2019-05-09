@@ -257,7 +257,9 @@ raop_init(int max_clients, raop_callbacks_t *callbacks)
 	}
 
 	/* Validate the callbacks structure */
-	if (!callbacks->audio_process) {
+	if (!callbacks->audio_init ||
+		!callbacks->audio_process ||
+		!callbacks->audio_destroy) {
 		return NULL;
 	}
 

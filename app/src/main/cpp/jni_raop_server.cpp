@@ -30,6 +30,7 @@
 #include "lib/logger.h"
 #include <malloc.h>
 #include <cstring>
+#include <math.h>
 
 static JavaVM* g_JavaVM;
 
@@ -48,7 +49,6 @@ void OnRecvAudioData(void *observer, pcm_data_struct *data) {
     g_JavaVM->DetachCurrentThread();
 }
 
-
 void OnRecvVideoData(void *observer, h264_decode_struct *data) {
     jobject obj = (jobject) observer;
     JNIEnv* jniEnv = NULL;
@@ -65,16 +65,44 @@ void OnRecvVideoData(void *observer, h264_decode_struct *data) {
     g_JavaVM->DetachCurrentThread();
 }
 
-extern "C" void
-audio_process(void *cls, pcm_data_struct *data)
+// 目前只含有音量
+typedef struct {
+
+    float volume;
+
+} audio_session_t;
+
+extern "C" void *
+audio_init(void *cls)
 {
+    audio_session_t *session;
+    session = (audio_session_t *)calloc(1, sizeof(audio_session_t));
+    session->volume = 1.0f;
+    return session;
+}
+
+extern "C" void
+audio_process(void *cls, void *opaque, pcm_data_struct *data)
+{
+    audio_session_t *session = (audio_session_t *)opaque;
+    for (int i = 0; i < data->data_len; i++) {
+        data->data[i] = data->data[i] * session->volume;
+    }
     OnRecvAudioData(cls, data);
 }
 
 extern "C" void
+audio_destroy(void *cls, void *opaque)
+{
+    audio_session_t *session = (audio_session_t *)opaque;
+    free(session);
+}
+// 处理音量变化
+extern "C" void
 audio_set_volume(void *cls, void *opaque, float volume)
 {
-
+    audio_session_t *session = (audio_session_t *)opaque;
+    session->volume = pow(10.0, 0.05*volume);
 }
 
 extern "C" void
@@ -104,7 +132,6 @@ log_callback(void *cls, int level, const char *msg) {
         }
         default:break;
     }
-
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -118,8 +145,10 @@ Java_com_fang_myapplication_RaopServer_start(JNIEnv* env, jobject object) {
     raop_t *raop;
     raop_callbacks_t raop_cbs;
     memset(&raop_cbs, 0, sizeof(raop_cbs));
-    raop_cbs.cls = (void *) env->NewGlobalRef(object);;
+    raop_cbs.cls = (void *) env->NewGlobalRef(object);
+    raop_cbs.audio_init = audio_init;
     raop_cbs.audio_process = audio_process;
+    raop_cbs.audio_destroy = audio_destroy;
     raop_cbs.audio_set_volume = audio_set_volume;
     raop_cbs.video_process = video_process;
     raop = raop_init(10, &raop_cbs);
@@ -129,10 +158,8 @@ Java_com_fang_myapplication_RaopServer_start(JNIEnv* env, jobject object) {
     } else {
         LOGD("raop init success");
     }
-
     raop_set_log_callback(raop, log_callback, NULL);
     raop_set_log_level(raop, RAOP_LOG_DEBUG);
-
     unsigned short port = 0;
     raop_start(raop, &port);
     raop_set_port(raop, port);
