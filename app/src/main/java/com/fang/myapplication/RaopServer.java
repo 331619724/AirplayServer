@@ -51,12 +51,14 @@ public class RaopServer implements SurfaceHolder.Callback {
         mAudioPlayer.start();
     }
 
-    public void onRecvVideoData(byte[] nal, int nalType, long dts, long pts) {
-        Log.d(TAG, "onRecvVideoData pts = " + pts + ", nalType = " + nalType + ", nal length = " + nal.length);
+    public void onRecvVideoData(byte[] nal, int nalType, long dts, long pts, int width, int height) {
+        Log.d(TAG, "onRecvVideoData pts = " + pts + ", nalType = " + nalType + ", width = " + width + ", height = " + height + ", nal length = " + nal.length);
         NALPacket nalPacket = new NALPacket();
         nalPacket.nalData = nal;
         nalPacket.nalType = nalType;
         nalPacket.pts = pts;
+        nalPacket.width = width;
+        nalPacket.height = height;
         mVideoPlayer.addPacker(nalPacket);
     }
 
