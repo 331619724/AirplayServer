@@ -15,7 +15,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-int utils_hwaddr_to_server_name(char *str, int strlen, const char *hwaddr, int hwaddrlen);
 int utils_hwaddr_raop(char *str, int strlen, const char *hwaddr, int hwaddrlen);
 int utils_hwaddr_airplay(char *str, int strlen, const char *hwaddr, int hwaddrlen);
 
