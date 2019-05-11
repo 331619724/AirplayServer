@@ -56,5 +56,22 @@ public class NetUtils {
         return "00:00:00:00:00:00";
     }
 
+    public static byte[] getLocalMacAddress2() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    continue;
+                }
+                return macBytes;
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    }
 
 }

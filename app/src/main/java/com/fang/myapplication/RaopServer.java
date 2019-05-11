@@ -86,9 +86,9 @@ public class RaopServer implements SurfaceHolder.Callback {
 
     }
 
-    public void startServer() {
+    public void startServer(String deviceName, byte[] hdAddr, int airplayPort) {
         if (mServerId == 0) {
-            mServerId = start();
+            mServerId = start(deviceName, hdAddr, airplayPort);
         }
     }
 
@@ -107,7 +107,7 @@ public class RaopServer implements SurfaceHolder.Callback {
         return 0;
     }
 
-    private native long start();
+    private native long start(String deviceName, byte[] hdAddr, int airplayPort);
     private native void stop(long serverId);
     private native int getPort(long serverId);
 }

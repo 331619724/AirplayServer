@@ -13,8 +13,10 @@ include_directories(crypto curve25519 ed25519 playfair plist/plist
         #fdk-aac/libDRCdec/include
         #fdk-aac/libSACdec/include
         #fdk-aac/libSACenc/include
+        ../mDNSResponder/mDNSPosix
+        ../mDNSResponder/mDNSCore
+        ../mDNSResponder/mDNSShared
         )
-
 
 aux_source_directory(. play_src)
 set(DIR_SRCS ${play_src})
@@ -32,4 +34,5 @@ target_link_libraries( play-lib
         playfair
         plist
         fdk-aac
+        jdns_sd
         ${log-lib})

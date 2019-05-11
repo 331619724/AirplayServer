@@ -25,6 +25,4 @@
         android:layout_alignBaseline="@id/btn_control"
         android:textColor="#ffffff"
         />
-
-
 </RelativeLayout>

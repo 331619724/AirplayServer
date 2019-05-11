@@ -25,6 +25,7 @@
 #include <jni.h>
 #include <stddef.h>
 #include "lib/raop.h"
+#include "lib/dnssd.h"
 #include "log.h"
 #include "lib/stream.h"
 #include "lib/logger.h"
@@ -140,8 +141,10 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
     return JNI_VERSION_1_6;
 }
 
+static dnssd_t *dnssd;
+
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_fang_myapplication_RaopServer_start(JNIEnv* env, jobject object) {
+Java_com_fang_myapplication_RaopServer_start(JNIEnv* env, jobject object, jstring deviceName, jbyteArray hwAddr, jint airplayPort) {
     raop_t *raop;
     raop_callbacks_t raop_cbs;
     memset(&raop_cbs, 0, sizeof(raop_cbs));
@@ -163,7 +166,21 @@ Java_com_fang_myapplication_RaopServer_start(JNIEnv* env, jobject object) {
     unsigned short port = 0;
     raop_start(raop, &port);
     raop_set_port(raop, port);
-    LOGD("raop port = % d", raop_get_port(raop));
+    const char *device_name = env->GetStringUTFChars(deviceName, 0);
+    jbyte *hw_addr = env->GetByteArrayElements(hwAddr, 0);
+    jsize hw_addr_len = env->GetArrayLength(hwAddr);
+    int error;
+    dnssd = dnssd_init(device_name, (char *)hw_addr, hw_addr_len, &error);
+    env->ReleaseByteArrayElements(hwAddr, hw_addr, 0);
+    env->ReleaseStringUTFChars(deviceName, device_name);
+    if (dnssd == NULL) {
+        LOGD("dnssd init error = %d", error);
+        raop_destroy(raop);
+        return 0;
+    }
+    dnssd_register_raop(dnssd, port);
+    dnssd_register_airplay(dnssd, airplayPort);
+    LOGD("raop port = %d, airplay port = %d", port, airplayPort);
     return (jlong) (void *) raop;
 }
 
@@ -179,5 +196,7 @@ Java_com_fang_myapplication_RaopServer_stop(JNIEnv* env, jobject object, jlong o
     jobject obj = (jobject) raop_get_callback_cls(raop);
     raop_destroy(raop);
     env->DeleteGlobalRef(obj);
-
+    dnssd_unregister_raop(dnssd);
+    dnssd_unregister_airplay(dnssd);
+    dnssd_destroy(dnssd);
 }
