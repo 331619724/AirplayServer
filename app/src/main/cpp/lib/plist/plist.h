@@ -30,7 +30,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996)
