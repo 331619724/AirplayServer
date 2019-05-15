@@ -30,11 +30,11 @@ typedef void (*raop_log_callback_t)(void *cls, int level, const char *msg);
 
 struct raop_callbacks_s {
 	void* cls;
-	// pcm数据回调
+	/* pcm数据回调 */
 	void* (*audio_init)(void *cls);
 	void  (*audio_process)(void *cls, void *session, pcm_data_struct *data);
 	void  (*audio_destroy)(void *cls, void *session);
-	// h264数据回调
+	/* h264数据回调 */
     void  (*video_process)(void *cls, h264_decode_struct *data);
 
 	/* Optional but recommended callback functions */

@@ -164,7 +164,6 @@ netutils_init_socket(unsigned short *port, int use_ipv6, int use_udp)
 	return -1;
 }
 
-// src是ip地址
 int
 netutils_parse_address(int family, const char *src, void *dst, int dstlen)
 {

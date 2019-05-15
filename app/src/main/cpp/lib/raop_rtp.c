@@ -398,14 +398,14 @@ raop_rtp_thread_time(void *arg)
         if (type_t == 0x53) {
 
         }
-        // 9-16 NTP请求报文离开发送端时发送端的本地时间。  T1
+        /* 9-16 NTP请求报文离开发送端时发送端的本地时间。  T1 */
         uint64_t Origin_Timestamp = byteutils_read_timeStamp(packet, 8);
-        // 17-24 NTP请求报文到达接收端时接收端的本地时间。 T2
+        /* 17-24 NTP请求报文到达接收端时接收端的本地时间。 T2 */
         uint64_t Receive_Timestamp = byteutils_read_timeStamp(packet, 16);
-        // 25-32 Transmit Timestamp：应答报文离开应答者时应答者的本地时间。 T3
+        /* 25-32 Transmit Timestamp：应答报文离开应答者时应答者的本地时间。 T3 */
         uint64_t Transmit_Timestamp = byteutils_read_timeStamp(packet, 24);
 
-        // FIXME: 先简单这样写吧
+        /* FIXME: 先简单这样写吧 */
         rec_pts = Receive_Timestamp;
 
 #ifdef _WIN32
@@ -484,30 +484,30 @@ raop_rtp_thread_udp(void *arg)
             int type_c = packet[1] & ~0x80;
             logger_log(raop_rtp->logger, LOGGER_DEBUG, "raop_rtp_thread_udp type_c 0x%02x, packetlen = %d", type_c, packetlen);
             if (type_c == 0x56) {
-                // 处理重传的包，去除头部4个字节
+                /* 处理重传的包，去除头部4个字节 */
                 int ret = raop_buffer_queue(raop_rtp->buffer, packet+4, packetlen-4, &raop_rtp->callbacks);
                 assert(ret >= 0);
 
             } else if (type_c == 0x54) {
-                // TODO: 暂时不处理
+                /* TODO: 暂时不处理 */
 
             } else {
                 logger_log(raop_rtp->logger, LOGGER_DEBUG, "raop_rtp_thread_udp unknown packet");
             }
         }
         if (FD_ISSET(raop_rtp->dsock, &rfds)) {
-            //logger_log(raop_rtp->logger, LOGGER_INFO, "Would have data packet in queue");
-            // 这里接收音频数据
+            // logger_log(raop_rtp->logger, LOGGER_INFO, "Would have data packet in queue");
+            /* 这里接收音频数据 */
             saddrlen = sizeof(saddr);
             packetlen = recvfrom(raop_rtp->dsock, (char *)packet, sizeof(packet), 0,
                                  (struct sockaddr *)&saddr, &saddrlen);
-            // rtp payload type
+            /* rtp payload type */
             int type_d = packet[1] & ~0x80;
-            //logger_log(raop_rtp->logger, LOGGER_DEBUG, "raop_rtp_thread_udp type_d 0x%02x, packetlen = %d", type_d, packetlen);
+            // logger_log(raop_rtp->logger, LOGGER_DEBUG, "raop_rtp_thread_udp type_d 0x%02x, packetlen = %d", type_d, packetlen);
 
-            // 出现len=16 如果没有发时间的话
+            /* 出现len=16 如果没有发时间的话 */
             if (packetlen >= 12) {
-                int no_resend = (raop_rtp->control_rport == 0);// false
+                int no_resend = (raop_rtp->control_rport == 0);/* false */
                 int buf_ret;
                 const void *audiobuf;
                 int audiobuflen;
@@ -535,7 +535,7 @@ raop_rtp_thread_udp(void *arg)
     return 0;
 }
 
-// 启动rtp服务,三个udp端口
+/* 启动rtp服务,三个udp端口 */
 void
 raop_rtp_start_audio(raop_rtp_t *raop_rtp, int use_udp, unsigned short control_rport,
                      unsigned short *control_lport, unsigned short *timing_lport, unsigned short *data_lport)

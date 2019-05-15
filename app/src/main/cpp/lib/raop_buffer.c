@@ -60,9 +60,9 @@ struct raop_buffer_s {
 
 	/* First and last seqnum */
 	int is_empty;
-	// 播放的序号
+	/* 播放的序号 */
 	unsigned short first_seqnum;
-	// 收到的序号
+	/* 收到的序号 */
 	unsigned short last_seqnum;
 
 	/* RTP buffer entries */
@@ -117,7 +117,7 @@ raop_buffer_init_key_iv(raop_buffer_t *raop_buffer,
                      const unsigned char *ecdh_secret)
 {
 
-    // 初始化key
+    /* 初始化key */
     unsigned char eaeskey[64];
     memcpy(eaeskey, aeskey, 16);
     sha512_context ctx;
@@ -272,7 +272,7 @@ raop_buffer_queue(raop_buffer_t *raop_buffer, unsigned char *data, unsigned shor
     }
     int payloadsize = datalen - 12;
 #ifdef DUMP_AUDIO
-    // 未解密的文件
+    /* 未解密的文件 */
     if (file_source != NULL) {
         fwrite(&data[12], payloadsize, 1, file_source);
     }
@@ -295,7 +295,7 @@ raop_buffer_queue(raop_buffer_t *raop_buffer, unsigned char *data, unsigned shor
     entry->flags = data[0];
     entry->type = data[1];
     entry->seqnum = seqnum;
-    // 第4个字节开始是pts
+    /* 第4个字节开始是pts */
     entry->timestamp = (data[4] << 24) | (data[5] << 16) |
                        (data[6] << 8) | data[7];
     entry->ssrc = (data[8] << 24) | (data[9] << 16) |
@@ -305,19 +305,19 @@ raop_buffer_queue(raop_buffer_t *raop_buffer, unsigned char *data, unsigned shor
     encryptedlen = payloadsize/16*16;
     unsigned char packetbuf[payloadsize];
     memset(packetbuf, 0, payloadsize);
-	// 需要在内部初始化
+	/* 需要在内部初始化 */
     AES_CTX aes_ctx_audio;
 	AES_set_key(&aes_ctx_audio, raop_buffer->aeskey, raop_buffer->aesiv, AES_MODE_128);
 	AES_convert_key(&aes_ctx_audio);
     AES_cbc_decrypt(&aes_ctx_audio, &data[12], packetbuf, encryptedlen);
     memcpy(packetbuf+encryptedlen, &data[12+encryptedlen], payloadsize-encryptedlen);
 #ifdef DUMP_AUDIO
-    // 解密的文件
+    /* 解密的文件 */
     if (file_aac != NULL) {
         fwrite(packetbuf, payloadsize, 1, file_aac);
     }
 #endif
-	// aac解码pcm
+	/* aac解码pcm */
     int ret = 0;
     int pkt_size = payloadsize;
     UINT valid_size = payloadsize;

@@ -181,16 +181,16 @@ raop_rtp_mirror_thread_time(void *arg)
         packetlen = recvfrom(raop_rtp_mirror->mirror_time_sock, (char *)packet, sizeof(packet), 0,
                              (struct sockaddr *)&saddr, &saddrlen);
         logger_log(raop_rtp_mirror->logger, LOGGER_DEBUG, "raop_rtp_mirror_thread_time receive time packetlen = %d", packetlen);
-        // 16-24 系统时钟最后一次被设定或更新的时间。
+        /* 16-24 系统时钟最后一次被设定或更新的时间。 */
         uint64_t Reference_Timestamp = byteutils_read_timeStamp(packet, 16);
-        // 24-32 NTP请求报文离开发送端时发送端的本地时间。  T1
+        /* 24-32 NTP请求报文离开发送端时发送端的本地时间。  T1 */
         uint64_t Origin_Timestamp = byteutils_read_timeStamp(packet, 24);
-        // 32-40 NTP请求报文到达接收端时接收端的本地时间。 T2
+        /* 32-40 NTP请求报文到达接收端时接收端的本地时间。 T2 */
         uint64_t Receive_Timestamp = byteutils_read_timeStamp(packet, 32);
-        // 40-48 Transmit Timestamp：应答报文离开应答者时应答者的本地时间。 T3
+        /* 40-48 Transmit Timestamp：应答报文离开应答者时应答者的本地时间。 T3 */
         uint64_t Transmit_Timestamp = byteutils_read_timeStamp(packet, 40);
 
-        // FIXME: 先简单这样写吧
+        /* FIXME: 先简单这样写吧 */
         rec_pts = Receive_Timestamp;
 
         if (first == 0) {
@@ -237,9 +237,9 @@ raop_rtp_mirror_thread(void *arg)
     assert(raop_rtp_mirror);
 
 #ifdef DUMP_H264
-    // C 解密的
+    /* C 解密的 */
     FILE* file = fopen("/sdcard/111.h264", "wb");
-    // 加密的源文件
+    /* 加密的源文件 */
     FILE* file_source = fopen("/sdcard/111.source", "wb");
 
     FILE* file_len = fopen("/sdcard/111.len", "wb");
@@ -290,7 +290,7 @@ raop_rtp_mirror_thread(void *arg)
             }
         }
         if (stream_fd != -1 && FD_ISSET(stream_fd, &rfds)) {
-            // packetlen初始0
+            /* packetlen初始0 */
             ret = recv(stream_fd, packet + readstart, 4 - readstart, 0);
             if (ret == 0) {
                 /* TCP socket closed */
@@ -306,44 +306,44 @@ raop_rtp_mirror_thread(void *arg)
                 continue;
             }
             if ((packet[0] == 80 && packet[1] == 79 && packet[2] == 83 && packet[3] == 84) || (packet[0] == 71 && packet[1] == 69 && packet[2] == 84)) {
-                // POST或者GET
+                /* POST或者GET */
                 logger_log(raop_rtp_mirror->logger, LOGGER_DEBUG, "handle http data");
             } else {
-                // 普通数据块
+                /* 普通数据块 */
                 do {
-                    // 读取剩下的124字节
+                    /* 读取剩下的124字节 */
                     ret = recv(stream_fd, packet + readstart, 128 - readstart, 0);
                     readstart = readstart + ret;
                 } while (readstart < 128);
                 int payloadsize = byteutils_get_int(packet, 0);
-                // FIXME: 这里计算方式需要再确认
+                /* FIXME: 这里计算方式需要再确认 */
                 short payloadtype = (short) (byteutils_get_short(packet, 4) & 0xff);
                 short payloadoption = byteutils_get_short(packet, 6);
 
-                // 处理内容数据
+                /* 处理内容数据 */
                 if (payloadtype == 0) {
                     uint64_t payloadntp = byteutils_get_long(packet, 8);
-                    // 读取时间
+                    /* 读取时间 */
                     if (pts_base == 0) {
                         pts_base = ntptopts(payloadntp);
                     } else {
                         pts =  ntptopts(payloadntp) - pts_base;
                     }
-                    // 这里是加密的数据
+                    /* 这里是加密的数据 */
                     unsigned char* payload_in = malloc(payloadsize);
                     unsigned char* payload = malloc(payloadsize);
                     readstart = 0;
                     do {
-                        // payload数据
+                        /* payload数据 */
                         ret = recv(stream_fd, payload_in + readstart, payloadsize - readstart, 0);
                         readstart = readstart + ret;
                     } while (readstart < payloadsize);
-                    //logger_log(raop_rtp_mirror->logger, LOGGER_DEBUG, "readstart = %d", readstart);
+                    /*logger_log(raop_rtp_mirror->logger, LOGGER_DEBUG, "readstart = %d", readstart); */
 #ifdef DUMP_H264
                     fwrite(payload_in, payloadsize, 1, file_source);
                     fwrite(&readstart, sizeof(readstart), 1, file_len);
 #endif
-                    // 解密数据
+                    /* 解密数据 */
                     mirror_buffer_decrypt(raop_rtp_mirror->buffer, payload_in, payload, payloadsize);
                     int nalu_size = 0;
                     int nalu_num = 0;
@@ -362,7 +362,7 @@ raop_rtp_mirror_thread(void *arg)
                     }
                     //logger_log(raop_rtp_mirror->logger, LOGGER_DEBUG, "nalu_size = %d, payloadsize = %d nalu_num = %d", nalu_size, payloadsize, nalu_num);
 
-                    // 写入文件
+                    /* 写入文件 */
 #ifdef DUMP_H264
                     fwrite(payload, payloadsize, 1, file);
 #endif
@@ -391,11 +391,11 @@ raop_rtp_mirror_thread(void *arg)
                         mRotateMode = 2;
                     }*/
 
-                    // sps_pps 这块数据是没有加密的
+                    /* sps_pps 这块数据是没有加密的 */
                     unsigned char payload[payloadsize];
                     readstart = 0;
                     do {
-                        // payload数据
+                        /* payload数据 */
                         ret = recv(stream_fd, payload + readstart, payloadsize - readstart, 0);
                         readstart = readstart + ret;
                     } while (readstart < payloadsize);
@@ -416,7 +416,7 @@ raop_rtp_mirror_thread(void *arg)
                     logger_log(raop_rtp_mirror->logger, LOGGER_DEBUG, "lengthofPPS = %d", h264.lengthofPPS);
                     memcpy(h264.picture_parameter_set, payload + h264.lengthofSPS + 11, h264.lengthofPPS);
                     if (h264.lengthofSPS + h264.lengthofPPS < 102400) {
-                        // 复制spspps
+                        /* 复制spspps */
                         int sps_pps_len = (h264.lengthofSPS + h264.lengthofPPS) + 8;
                         unsigned char sps_pps[sps_pps_len];
                         sps_pps[0] = 0;
