@@ -518,7 +518,7 @@ static void node_estimate_size(node_t *node, uint64_t *size, uint32_t depth)
     }
 }
 
-PLIST_API void plist_to_xml(plist_t plist, char **plist_xml, uint32_t * length)
+void plist_to_xml(plist_t plist, char **plist_xml, uint32_t * length)
 {
     uint64_t size = 0;
     node_estimate_size(plist, &size, 0);
@@ -1425,7 +1425,7 @@ err_out:
     }
 }
 
-PLIST_API void plist_from_xml(const char *plist_xml, uint32_t length, plist_t * plist)
+void plist_from_xml(const char *plist_xml, uint32_t length, plist_t * plist)
 {
     if (!plist_xml || (length == 0)) {
         *plist = NULL;
