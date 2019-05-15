@@ -34,6 +34,11 @@ typedef HANDLE mutex_handle_t;
 #define MUTEX_UNLOCK(handle) ReleaseMutex(handle)
 #define MUTEX_DESTROY(handle) CloseHandle(handle)
 
+typedef HANDLE cond_handle_t;
+#define COND_CREATE(handle) handle = CreateEvent(NULL, TRUE, FALSE, NULL)
+#define COND_SIGNAL(handle) SetEvent(handle)
+#define COND_DESTROY(handle) CloseHandle(handle)
+
 #else /* Use pthread library */
 
 #include <pthread.h>

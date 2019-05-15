@@ -22,7 +22,9 @@
 #define RAOP_AESIV_LEN  16
 #define RAOP_AESKEY_LEN 16
 #define RAOP_PACKET_LEN 32768
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef struct raop_rtp_s raop_rtp_t;
 typedef struct h264codec_s h264codec_t;
 
@@ -41,5 +43,7 @@ void raop_rtp_set_progress(raop_rtp_t *raop_rtp, unsigned int start, unsigned in
 void raop_rtp_flush(raop_rtp_t *raop_rtp, int next_seq);
 void raop_rtp_stop(raop_rtp_t *raop_rtp);
 void raop_rtp_destroy(raop_rtp_t *raop_rtp);
-
+#ifdef __cplusplus
+}
+#endif
 #endif

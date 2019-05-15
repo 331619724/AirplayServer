@@ -196,6 +196,12 @@ raop_rtp_mirror_thread_time(void *arg)
         if (first == 0) {
             first++;
         } else {
+
+#ifdef _WIN32
+            MUTEX_LOCK(raop_rtp_mirror->time_mutex);
+            WaitForSingleObject(&raop_rtp_mirror->time_cond, 3000);
+            MUTEX_UNLOCK(raop_rtp_mirror->time_mutex);
+#else
             struct timeval now;
             struct timespec outtime;
             MUTEX_LOCK(raop_rtp_mirror->time_mutex);
@@ -204,6 +210,9 @@ raop_rtp_mirror_thread_time(void *arg)
             outtime.tv_nsec = now.tv_usec * 1000;
             int ret = pthread_cond_timedwait(&raop_rtp_mirror->time_cond, &raop_rtp_mirror->time_mutex, &outtime);
             MUTEX_UNLOCK(raop_rtp_mirror->time_mutex);
+#endif
+
+
         }
     }
     logger_log(raop_rtp_mirror->logger, LOGGER_INFO, "Exiting UDP raop_rtp_mirror_thread_time thread");

@@ -25,14 +25,25 @@ add_library( play-lib
         SHARED
         ${DIR_SRCS}
         )
-find_library( log-lib
-        log )
-target_link_libraries( play-lib
-        crypto
-        curve25519
-        ed25519
-        playfair
-        plist
-        fdk-aac
-        jdns_sd
-        ${log-lib})
+if(ANDROID)
+    find_library( log-lib
+            log )
+    target_link_libraries( play-lib
+            crypto
+            curve25519
+            ed25519
+            playfair
+            plist
+            fdk-aac
+            jdns_sd
+            ${log-lib})
+else()
+    target_link_libraries( play-lib
+            crypto
+            curve25519
+            ed25519
+            playfair
+            plist
+            fdk-aac
+            jdns_sd)
+endif()

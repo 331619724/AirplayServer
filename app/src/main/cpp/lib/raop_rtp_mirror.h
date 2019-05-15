@@ -18,7 +18,9 @@
 #include <stdint.h>
 #include "raop.h"
 #include "logger.h"
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef struct raop_rtp_mirror_s raop_rtp_mirror_t;
 typedef struct h264codec_s h264codec_t;
 
@@ -32,4 +34,7 @@ static int raop_rtp_init_mirror_sockets(raop_rtp_mirror_t *raop_rtp_mirror, int 
 
 void raop_rtp_mirror_stop(raop_rtp_mirror_t *raop_rtp_mirror);
 void raop_rtp_mirror_destroy(raop_rtp_mirror_t *raop_rtp_mirror);
+#ifdef __cplusplus
+}
+#endif
 #endif //RAOP_RTP_MIRROR_H

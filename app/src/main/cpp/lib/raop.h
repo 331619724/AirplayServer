@@ -2,7 +2,7 @@
 #define RAOP_H
 
 #include "stream.h"
-#if defined (WIN32) && defined(DLL_EXPORT)
+#if defined (_WIN32) && defined(DLL_EXPORT)
 # define RAOP_API __declspec(dllexport)
 #else
 # define RAOP_API

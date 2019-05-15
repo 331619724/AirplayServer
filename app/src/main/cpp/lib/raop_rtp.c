@@ -408,6 +408,11 @@ raop_rtp_thread_time(void *arg)
         // FIXME: 先简单这样写吧
         rec_pts = Receive_Timestamp;
 
+#ifdef _WIN32
+        MUTEX_LOCK(raop_rtp->time_mutex);
+        WaitForSingleObject(&raop_rtp->time_cond, 3000);
+        MUTEX_UNLOCK(raop_rtp->time_mutex);
+#else
         struct timeval now;
         struct timespec outtime;
         MUTEX_LOCK(raop_rtp->time_mutex);
@@ -416,6 +421,8 @@ raop_rtp_thread_time(void *arg)
         outtime.tv_nsec = now.tv_usec * 1000;
         int ret = pthread_cond_timedwait(&raop_rtp->time_cond, &raop_rtp->time_mutex, &outtime);
         MUTEX_UNLOCK(raop_rtp->time_mutex);
+#endif
+
     }
 
     logger_log(raop_rtp->logger, LOGGER_INFO, "Exiting UDP raop_rtp_thread_time thread");

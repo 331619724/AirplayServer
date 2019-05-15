@@ -14,7 +14,9 @@
 
 #include <malloc.h>
 #include <assert.h>
+#ifdef __ANDROID__
 #include <endian.h>
+#endif
 #include <string.h>
 #include "dnssd.h"
 #include "../log.h"
