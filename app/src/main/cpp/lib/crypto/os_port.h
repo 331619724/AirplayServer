@@ -57,7 +57,6 @@ extern "C" {
 #endif
 
 #ifdef WIN32
-
 /* Windows CE stuff */
 #if defined(_WIN32_WCE)
 #include <basetsd.h>
@@ -69,8 +68,8 @@ extern "C" {
 #include <fcntl.h>
 #endif      /* _WIN32_WCE */
 
-#include <winsock.h>
 #include <direct.h>
+#include <stdint.h>
 #undef getpid
 #undef open
 #undef close
@@ -107,15 +106,6 @@ extern "C" {
    see http://www.khngai.com/emacs/tty.php  */
 #define TTY_FLUSH()             if (!_isatty(_fileno(stdout))) fflush(stdout);
 
-
-typedef UINT8 uint8_t;
-typedef INT8 int8_t;
-typedef UINT16 uint16_t;
-typedef INT16 int16_t;
-typedef UINT32 uint32_t;
-typedef INT32 int32_t;
-typedef UINT64 uint64_t;
-typedef INT64 int64_t;
 typedef int socklen_t;
 
 #else   /* Not Win32 */
