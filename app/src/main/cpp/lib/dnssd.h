@@ -29,15 +29,15 @@ extern "C" {
 
 typedef struct dnssd_s dnssd_t;
 
-DNSSD_API dnssd_t *dnssd_init(const char *name, const char *hw_addr, int hw_addr_len, int *error);
+dnssd_t *dnssd_init(const char *name, const char *hw_addr, int hw_addr_len, int *error);
 
-DNSSD_API int dnssd_register_raop(dnssd_t *dnssd, unsigned short port);
-DNSSD_API int dnssd_register_airplay(dnssd_t *dnssd, unsigned short port);
+int dnssd_register_raop(dnssd_t *dnssd, unsigned short port);
+int dnssd_register_airplay(dnssd_t *dnssd, unsigned short port);
 
-DNSSD_API void dnssd_unregister_raop(dnssd_t *dnssd);
-DNSSD_API void dnssd_unregister_airplay(dnssd_t *dnssd);
+void dnssd_unregister_raop(dnssd_t *dnssd);
+void dnssd_unregister_airplay(dnssd_t *dnssd);
 
-DNSSD_API void dnssd_destroy(dnssd_t *dnssd);
+void dnssd_destroy(dnssd_t *dnssd);
 
 #ifdef __cplusplus
 }
