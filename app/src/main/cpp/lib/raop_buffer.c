@@ -29,6 +29,7 @@
 #include "fdk-aac/libFDK/include/clz.h"
 #include "fdk-aac/libSYS/include/FDK_audio.h"
 #include "stream.h"
+#include "aac_decoder.h"
 
 #define RAOP_BUFFER_LENGTH 512
 
@@ -56,8 +57,7 @@ struct raop_buffer_s {
 	unsigned char aeskey[RAOP_AESKEY_LEN];
 	unsigned char aesiv[RAOP_AESIV_LEN];
 
-    HANDLE_AACDECODER phandle;
-
+    aac_decoder_t *aac_decoder;
 	/* First and last seqnum */
 	int is_empty;
 	/* 播放的序号 */
@@ -79,36 +79,6 @@ static int fdk_flags = 0;
 #define N_SAMPLE 480
 
 static int pcm_pkt_size = 4 * N_SAMPLE;
-
-HANDLE_AACDECODER
-create_fdk_aac_decoder(logger_t *logger)
-{
-    int ret = 0;
-    UINT nrOfLayers = 1;
-	HANDLE_AACDECODER phandle = aacDecoder_Open(TT_MP4_RAW, nrOfLayers);
-    if (phandle == NULL) {
-        logger_log(logger, LOGGER_DEBUG, "aacDecoder open faild!\n");
-        return NULL;
-    }
-    /* ASC config binary data */
-	UCHAR eld_conf[] = { 0xF8, 0xE8, 0x50, 0x00 };
-	UCHAR *conf[] = { eld_conf };
-	static UINT conf_len = sizeof(eld_conf);
-    ret = aacDecoder_ConfigRaw(phandle, conf, &conf_len);
-    if (ret != AAC_DEC_OK) {
-        logger_log(logger, LOGGER_DEBUG, "Unable to set configRaw\n");
-        return NULL;
-    }
-    CStreamInfo *aac_stream_info = aacDecoder_GetStreamInfo(phandle);
-    if (aac_stream_info == NULL) {
-        logger_log(logger, LOGGER_DEBUG, "aacDecoder_GetStreamInfo failed!\n");
-        return NULL;
-    }
-    logger_log(logger, LOGGER_DEBUG, "> stream info: channel = %d\tsample_rate = %d\tframe_size = %d\taot = %d\tbitrate = %d\n",   \
-            aac_stream_info->channelConfig, aac_stream_info->aacSampleRate,
-           aac_stream_info->aacSamplesPerFrame, aac_stream_info->aot, aac_stream_info->bitRate);
-    return phandle;
-}
 
 void
 raop_buffer_init_key_iv(raop_buffer_t *raop_buffer,
@@ -155,16 +125,16 @@ raop_buffer_init(logger_t *logger,
 
 	/* Allocate the output audio buffers */
     audio_buffer_size = 480 * 2 * 2;
-    raop_buffer->phandle = create_fdk_aac_decoder(logger);
-    if (!raop_buffer->phandle) {
+    raop_buffer->aac_decoder = aac_create(logger);
+    if (!raop_buffer->aac_decoder) {
         free(raop_buffer);
         return NULL;
     }
 	raop_buffer->buffer_size = audio_buffer_size * RAOP_BUFFER_LENGTH;
 	raop_buffer->buffer = malloc(raop_buffer->buffer_size);
 	if (!raop_buffer->buffer) {
-        if (raop_buffer->phandle) {
-            free(raop_buffer->phandle);
+        if (raop_buffer->aac_decoder) {
+            aac_free(raop_buffer->aac_decoder);
         }
 		free(raop_buffer);
 		return NULL;
@@ -186,7 +156,7 @@ void
 raop_buffer_destroy(raop_buffer_t *raop_buffer)
 {
 	if (raop_buffer) {
-	    aacDecoder_Close(raop_buffer->phandle);
+        aac_free(raop_buffer->aac_decoder);
 		free(raop_buffer->buffer);
 		free(raop_buffer);
 	}
@@ -321,20 +291,12 @@ raop_buffer_queue(raop_buffer_t *raop_buffer, unsigned char *data, unsigned shor
         fwrite(packetbuf, payloadsize, 1, file_aac);
     }
 #endif
-	/* aac解码pcm */
-    int ret = 0;
-    int pkt_size = payloadsize;
-    UINT valid_size = payloadsize;
-    UCHAR *input_buf[1] = {packetbuf};
-    ret = aacDecoder_Fill(raop_buffer->phandle, input_buf, &pkt_size, &valid_size);
+    /* aac解码pcm */
+    int ret = aac_decode_frame(raop_buffer->aac_decoder, packetbuf, payloadsize, entry->audio_buffer, pcm_pkt_size);
     if (ret != AAC_DEC_OK) {
-        logger_log(raop_buffer->logger, LOGGER_ERR, "aacDecoder_Fill error : %x", ret);
-    }
-	ret = aacDecoder_DecodeFrame(raop_buffer->phandle, entry->audio_buffer, pcm_pkt_size, fdk_flags);
-	entry->audio_buffer_len = pcm_pkt_size;
-	if (ret != AAC_DEC_OK) {
-		logger_log(raop_buffer->logger, LOGGER_ERR, "aacDecoder_DecodeFrame error : 0x%x", ret);
+		logger_log(raop_buffer->logger, LOGGER_ERR, "aac_decode_frame error : 0x%x", ret);
 	}
+    entry->audio_buffer_len = pcm_pkt_size;
 #ifdef DUMP_AUDIO
     if (file_pcm != NULL) {
         fwrite(entry->audio_buffer, entry->audio_buffer_len, 1, file_pcm);

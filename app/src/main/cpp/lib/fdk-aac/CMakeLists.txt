@@ -55,7 +55,7 @@ else()
 endif()
 
 target_include_directories(fdk-aac
-  PRIVATE
+  PUBLIC
   ${fdk_aac_path}/libAACdec/include
   ${fdk_aac_path}/libAACenc/include
   ${fdk_aac_path}/libPCMutils/include

@@ -373,7 +373,6 @@ raop_rtp_mirror_thread(void *arg)
                     h264_data.pts = pts;
                     raop_rtp_mirror->callbacks.video_process(raop_rtp_mirror->callbacks.cls, &h264_data);
                     free(payload_in);
-                    free(payload);
                 } else if ((payloadtype & 255) == 1) {
                     float mWidthSource = byteutils_get_float(packet, 40);
                     float mHeightSource = byteutils_get_float(packet, 44);
