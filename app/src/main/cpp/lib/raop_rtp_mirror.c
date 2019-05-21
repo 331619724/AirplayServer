@@ -392,7 +392,7 @@ raop_rtp_mirror_thread(void *arg)
                     }*/
 
                     /* sps_pps 这块数据是没有加密的 */
-                    unsigned char payload[payloadsize];
+                    unsigned char *payload = malloc(payloadsize);
                     readstart = 0;
                     do {
                         /* payload数据 */
@@ -418,7 +418,7 @@ raop_rtp_mirror_thread(void *arg)
                     if (h264.lengthofSPS + h264.lengthofPPS < 102400) {
                         /* 复制spspps */
                         int sps_pps_len = (h264.lengthofSPS + h264.lengthofPPS) + 8;
-                        unsigned char sps_pps[sps_pps_len];
+                        unsigned char *sps_pps = malloc(sps_pps_len);
                         sps_pps[0] = 0;
                         sps_pps[1] = 0;
                         sps_pps[2] = 0;
@@ -442,6 +442,7 @@ raop_rtp_mirror_thread(void *arg)
                     }
                     free(h264.picture_parameter_set);
                     free(h264.sequence);
+                    free(payload);
                 } else if (payloadtype == (short) 2) {
                     readstart = 0;
                     if (payloadsize > 0) {

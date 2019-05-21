@@ -169,8 +169,8 @@ values. Return this value minus 1. Return 0 if operand==0.
 *****************************************************************************/
 #if !defined(FUNCTION_fixnorm_S)
 #ifdef FUNCTION_fixnorm_D
-inline INT fixnorm_S(FIXP_SGL val) {
-  if (val == (FIXP_SGL)0) {
+inline INT fixnorm_S(SHORT val) {
+  if (val == (SHORT)0) {
     return 0;
   }
   return fixnorm_D((INT)(val)) - 16;

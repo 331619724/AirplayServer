@@ -29,8 +29,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#ifdef WIN32
-#include <windows.h>
+#ifdef _WIN32
+#include <winsock2.h>
 #else
 #include <pthread.h>
 #endif
@@ -38,76 +38,6 @@
 #include "node.h"
 #include "hashtable.h"
 
-extern void plist_xml_init(void);
-extern void plist_xml_deinit(void);
-extern void plist_bin_init(void);
-extern void plist_bin_deinit(void);
-
-static void internal_plist_init(void)
-{
-    plist_bin_init();
-    plist_xml_init();
-}
-
-static void internal_plist_deinit(void)
-{
-    plist_bin_deinit();
-    plist_xml_deinit();
-}
-
-#ifdef WIN32
-
-typedef volatile struct {
-    LONG lock;
-    int state;
-} thread_once_t;
-
-static thread_once_t init_once = {0, 0};
-static thread_once_t deinit_once = {0, 0};
-
-void thread_once(thread_once_t *once_control, void (*init_routine)(void))
-{
-    while (InterlockedExchange(&(once_control->lock), 1) != 0) {
-        Sleep(1);
-    }
-    if (!once_control->state) {
-        once_control->state = 1;
-        init_routine();
-    }
-    InterlockedExchange(&(once_control->lock), 0);
-}
-
-BOOL WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID lpReserved)
-{
-    switch (dwReason) {
-    case DLL_PROCESS_ATTACH:
-        thread_once(&init_once, internal_plist_init);
-        break;
-    case DLL_PROCESS_DETACH:
-        thread_once(&deinit_once, internal_plist_deinit);
-        break;
-    default:
-        break;
-    }
-    return 1;
-}
-
-#else
-
-static pthread_once_t init_once = PTHREAD_ONCE_INIT;
-static pthread_once_t deinit_once = PTHREAD_ONCE_INIT;
-
-static void __attribute__((constructor)) libplist_initialize(void)
-{
-    pthread_once(&init_once, internal_plist_init);
-}
-
-static void __attribute__((destructor)) libplist_deinitialize(void)
-{
-    pthread_once(&deinit_once, internal_plist_deinit);
-}
-
-#endif
 
 
 int plist_is_binary(const char *plist_data, uint32_t length)

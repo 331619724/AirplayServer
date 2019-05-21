@@ -21,10 +21,18 @@ include_directories(crypto curve25519 ed25519 playfair plist/plist
 aux_source_directory(. play_src)
 set(DIR_SRCS ${play_src})
 
-add_library( play-lib
-        SHARED
-        ${DIR_SRCS}
-        )
+if(WIN32)
+    add_library( play-lib
+            STATIC
+            ${DIR_SRCS}
+            )
+else()
+    add_library( play-lib
+            SHARED
+            ${DIR_SRCS}
+            )
+endif()
+
 if(ANDROID)
     find_library( log-lib
             log )

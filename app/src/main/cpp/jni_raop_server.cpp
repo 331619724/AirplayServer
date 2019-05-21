@@ -62,6 +62,7 @@ void OnRecvVideoData(void *observer, h264_decode_struct *data) {
     jniEnv->SetByteArrayRegion(barr, (jint) 0, data->data_len, (jbyte *) data->data);
     jniEnv->CallVoidMethod(obj, onRecvVideoDataM, barr, data->frame_type,
                                          data->pts, data->pts, data->width, data->height);
+    free(data->data);
     jniEnv->DeleteLocalRef(barr);
     g_JavaVM->DetachCurrentThread();
 }

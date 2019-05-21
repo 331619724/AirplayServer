@@ -16,24 +16,43 @@ aux_source_directory(${fdk_aac_path}/libArithCoding/src fdk_aac_arith_coding_src
 aux_source_directory(${fdk_aac_path}/libDRCdec/src fdk_aac_drc_dec_src)
 aux_source_directory(${fdk_aac_path}/libSACdec/src fdk_aac_sac_dec_src)
 aux_source_directory(${fdk_aac_path}/libSACenc/src fdk_aac_sac_enc_src)
+if(WIN32)
+    add_library(fdk-aac
+            STATIC
+      ${fdk_aac_dec_src}
+      ${fdk_aac_enc_src}
+      ${fdk_aac_pcm_utils_src}
+      ${fdk_aac_fdk_src}
+      ${fdk_aac_sys_src}
+      ${fdk_aac_mpeg_tp_dec_src}
+      ${fdk_aac_mpeg_tp_enc_src}
+      ${fdk_aac_sbr_dec_src}
+            ${fdk_aac_sbr_enc_src}
 
-add_library(fdk-aac
-        SHARED
-  ${fdk_aac_dec_src}
-  ${fdk_aac_enc_src}
-  ${fdk_aac_pcm_utils_src}
-  ${fdk_aac_fdk_src}
-  ${fdk_aac_sys_src}
-  ${fdk_aac_mpeg_tp_dec_src}
-  ${fdk_aac_mpeg_tp_enc_src}
-  ${fdk_aac_sbr_dec_src}
-        ${fdk_aac_sbr_enc_src}
+            ${fdk_aac_arith_coding_src}
+            ${fdk_aac_drc_dec_src}
+            ${fdk_aac_sac_dec_src}
+            ${fdk_aac_sac_enc_src}
+      )
+else()
+    add_library(fdk-aac
+            SHARED
+            ${fdk_aac_dec_src}
+            ${fdk_aac_enc_src}
+            ${fdk_aac_pcm_utils_src}
+            ${fdk_aac_fdk_src}
+            ${fdk_aac_sys_src}
+            ${fdk_aac_mpeg_tp_dec_src}
+            ${fdk_aac_mpeg_tp_enc_src}
+            ${fdk_aac_sbr_dec_src}
+            ${fdk_aac_sbr_enc_src}
 
-        ${fdk_aac_arith_coding_src}
-        ${fdk_aac_drc_dec_src}
-        ${fdk_aac_sac_dec_src}
-        ${fdk_aac_sac_enc_src}
-  )
+            ${fdk_aac_arith_coding_src}
+            ${fdk_aac_drc_dec_src}
+            ${fdk_aac_sac_dec_src}
+            ${fdk_aac_sac_enc_src}
+            )
+endif()
 
 target_include_directories(fdk-aac
   PRIVATE

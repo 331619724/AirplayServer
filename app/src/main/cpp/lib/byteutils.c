@@ -14,6 +14,9 @@
 
 #include <time.h>
 #include "byteutils.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int byteutils_get_int(unsigned char* b, int offset) {
     return ((b[offset + 3] & 0xff) << 24) | ((b[offset + 2] & 0xff) << 16) | ((b[offset + 1] & 0xff) << 8) | (b[offset] & 0xff);
@@ -73,8 +76,24 @@ void byteutils_put_timeStamp(unsigned char* b, int offset, uint64_t time) {
     //b[offset++] = (Math.random() * 255.0);
 }
 
+#ifdef _WIN32
+int clock_gettime(int dummy, struct timespec* spec)      //C-file part
+{
+	__int64 wintime; GetSystemTimeAsFileTime((FILETIME*)& wintime);
+	wintime -= 116444736000000000i64;  //1jan1601 to 1jan1970
+	spec->tv_sec = wintime / 10000000i64;           //seconds
+	spec->tv_nsec = wintime % 10000000i64 * 100;      //nano-seconds
+	return 0;
+}
+uint64_t now_us() {
+	struct timespec time;
+	clock_gettime(0, &time);
+	return (uint64_t)time.tv_sec * 10000000L + (uint64_t)(time.tv_nsec / 1000);
+}
+#else
 uint64_t now_us() {
     struct timespec time;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time);
     return (uint64_t)time.tv_sec * 10000000L + (uint64_t)(time.tv_nsec / 1000);
 }
+#endif

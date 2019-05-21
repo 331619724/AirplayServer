@@ -5,7 +5,7 @@ if(WIN32)
 
     include_directories(mDNSCore mDNSShared)
     add_library( jdns_sd
-
+            STATIC
             mDNSWindows/DLL/dllmain.c
             mDNSShared/DebugServices.c
             mDNSShared/dnssd_clientlib.c

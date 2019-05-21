@@ -303,7 +303,11 @@ raop_buffer_queue(raop_buffer_t *raop_buffer, unsigned char *data, unsigned shor
     entry->available = 1;
 
     encryptedlen = payloadsize/16*16;
-    unsigned char packetbuf[payloadsize];
+    unsigned char *packetbuf = malloc(payloadsize);
+    if (!packetbuf) {
+		logger_log(raop_buffer->logger, LOGGER_ERR, "packetbuf malloc failed");
+    	return -2;
+    }
     memset(packetbuf, 0, payloadsize);
 	/* 需要在内部初始化 */
     AES_CTX aes_ctx_audio;
@@ -346,7 +350,7 @@ raop_buffer_queue(raop_buffer_t *raop_buffer, unsigned char *data, unsigned shor
 	if (seqnum_cmp(seqnum, raop_buffer->last_seqnum) > 0) {
 		raop_buffer->last_seqnum = seqnum;
 	}
-
+	free(packetbuf);
     return 1;
 }
 
